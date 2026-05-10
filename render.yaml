@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: growthmind-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: "pip install uv && uv sync --frozen"
+    startCommand: "uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DEFAULT_MODEL
+        value: claude-opus-4-7
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MAX_TOKENS_PER_POST
+        value: "2048"
+      - key: CORS_ORIGINS
+        sync: false

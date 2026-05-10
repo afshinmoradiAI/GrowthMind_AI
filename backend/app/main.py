@@ -1,7 +1,22 @@
 from fastapi import FastAPI
- 
-app = FastAPI(title="Paper Writer API", version="0.1.0")
- 
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.routes_content import router as content_router
+from app.core.config import settings
+
+app = FastAPI(title="GrowthMind AI", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(content_router)
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}

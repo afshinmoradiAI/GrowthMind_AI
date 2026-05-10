@@ -8,3 +8,5 @@ Steps:
 5. Add the agent to the orchestrator's roster.
 6. Write a unit test in backend/tests/test_agents/test_<name>.py.
 7. Show me the diff before committing.
+ 
+Follow .claude/rules/agent-conventions.md strictly.
