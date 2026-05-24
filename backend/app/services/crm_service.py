@@ -10,8 +10,9 @@ from app.schemas.leads import LeadSearchResponse
 
 
 class CRMService:
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, user_id: str) -> None:
         self.session = session
+        self.user_id = user_id
         self.logger = get_logger("service.crm")
 
     def import_search(
@@ -22,13 +23,17 @@ class CRMService:
         for item in search.leads:
             lead = item.lead
             existing = self.session.execute(
-                select(CRMLead).where(CRMLead.place_id == lead.place_id)
+                select(CRMLead).where(
+                    CRMLead.user_id == self.user_id,
+                    CRMLead.place_id == lead.place_id,
+                )
             ).scalar_one_or_none()
             if existing is not None:
                 skipped += 1
                 continue
 
             record = CRMLead(
+                user_id=self.user_id,
                 place_id=lead.place_id,
                 name=lead.name,
                 address=lead.address,
@@ -69,7 +74,10 @@ class CRMService:
 
         self.session.commit()
         self.logger.info(
-            "crm import imported=%d skipped=%d", len(imported_ids), skipped
+            "crm import user=%s imported=%d skipped=%d",
+            self.user_id,
+            len(imported_ids),
+            skipped,
         )
         return imported_ids, skipped
 
@@ -79,7 +87,12 @@ class CRMService:
         tier: str | None = None,
         limit: int = 100,
     ) -> list[CRMLead]:
-        stmt = select(CRMLead).order_by(CRMLead.updated_at.desc()).limit(limit)
+        stmt = (
+            select(CRMLead)
+            .where(CRMLead.user_id == self.user_id)
+            .order_by(CRMLead.updated_at.desc())
+            .limit(limit)
+        )
         if status is not None:
             stmt = stmt.where(CRMLead.status == status.value)
         if tier is not None:
@@ -88,7 +101,9 @@ class CRMService:
 
     def get_lead(self, lead_id: str) -> CRMLead | None:
         return self.session.execute(
-            select(CRMLead).where(CRMLead.id == lead_id)
+            select(CRMLead).where(
+                CRMLead.id == lead_id, CRMLead.user_id == self.user_id
+            )
         ).scalar_one_or_none()
 
     def update_lead(
@@ -116,6 +131,10 @@ class CRMService:
     def mark_touch_sent(
         self, lead_id: str, touch_id: str, sent_at: datetime | None = None
     ) -> CRMTouch | None:
+        # ensure the lead belongs to this user
+        lead = self.get_lead(lead_id)
+        if lead is None:
+            return None
         touch = self.session.execute(
             select(CRMTouch).where(
                 CRMTouch.id == touch_id, CRMTouch.lead_id == lead_id

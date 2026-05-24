@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.dependencies import get_current_user_with_cookie
+from app.db.models import User
 from app.schemas.crm import (
     CRMImportRequest,
     CRMImportResponse,
@@ -17,8 +19,11 @@ from app.services.crm_service import CRMService
 router = APIRouter(prefix="/crm", tags=["crm"])
 
 
-def get_crm_service(db: Session = Depends(get_db)) -> CRMService:
-    return CRMService(db)
+def get_crm_service(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_with_cookie),
+) -> CRMService:
+    return CRMService(db, user_id=user.id)
 
 
 @router.post(

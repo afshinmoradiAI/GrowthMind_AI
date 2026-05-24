@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.agents import ICPBuilderAgent
+from app.core.dependencies import get_current_user_with_cookie
+from app.db.models import User
 from app.schemas.leads import (
     ICPParsed,
     ICPQuery,
@@ -10,7 +12,11 @@ from app.schemas.leads import (
 from app.services.google_places import GooglePlacesError
 from app.services.lead_orchestrator import LeadOrchestrator
 
-router = APIRouter(prefix="/leads", tags=["leads"])
+router = APIRouter(
+    prefix="/leads",
+    tags=["leads"],
+    dependencies=[Depends(get_current_user_with_cookie)],
+)
 
 
 def get_orchestrator() -> LeadOrchestrator:

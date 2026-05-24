@@ -89,6 +89,16 @@ def client():
     )
     app.dependency_overrides[get_orchestrator] = lambda: fake
     app.dependency_overrides[get_icp_agent] = lambda: fake_icp
+
+    # /leads is now auth-gated — bypass auth in tests by overriding the dependency.
+    from app.core.dependencies import get_current_user_with_cookie
+    from app.db.models import User as UserModel
+
+    fake_user = UserModel(
+        id="test-user", email="t@example.com", hashed_password="x"
+    )
+    app.dependency_overrides[get_current_user_with_cookie] = lambda: fake_user
+
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

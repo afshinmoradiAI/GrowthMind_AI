@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 import {
   searchLeadsFromICP,
   type LeadSearchResponse,
@@ -37,6 +40,8 @@ const TIER_STYLES: Record<
 };
 
 export default function LeadsPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [query, setQuery] = useState(
     "Find dental clinics in Melbourne to pitch cosmetic dentistry on LinkedIn"
   );
@@ -44,6 +49,22 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<LeadSearchResponse | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?next=/leads");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div className="mx-auto max-w-6xl px-6 py-24 text-center text-sm text-zinc-500">
+        <Link href="/login" className="text-emerald-600 hover:underline">
+          Redirecting to sign-in…
+        </Link>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

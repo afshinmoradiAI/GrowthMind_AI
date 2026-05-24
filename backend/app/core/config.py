@@ -15,5 +15,12 @@ class Settings(BaseSettings):
     ]
     database_url: str = "sqlite:///./growthmind.db"
 
+    jwt_secret: str = "dev-insecure-secret-change-me"
+    jwt_algorithm: str = "HS256"
+    jwt_expires_minutes: int = 60 * 24 * 7  # 7 days
+    cookie_name: str = "growthmind_session"
+    cookie_secure: bool = False  # set True in production (HTTPS only)
+    cookie_samesite: str = "lax"
+
 
 settings = Settings()

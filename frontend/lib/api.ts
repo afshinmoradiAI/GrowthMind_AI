@@ -63,6 +63,7 @@ export async function searchLeadsFromICP(
 ): Promise<LeadSearchResponse> {
   const response = await fetch(`${API_BASE_URL}/leads/icp/search`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(query),
     signal,

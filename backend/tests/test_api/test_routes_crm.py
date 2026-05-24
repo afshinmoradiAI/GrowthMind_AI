@@ -26,6 +26,10 @@ def client():
 
     app.dependency_overrides[get_db] = _override_get_db
     with TestClient(app) as c:
+        c.post(
+            "/auth/register",
+            json={"email": "user@example.com", "password": "supersecret"},
+        )
         yield c
     app.dependency_overrides.clear()
     engine.dispose()

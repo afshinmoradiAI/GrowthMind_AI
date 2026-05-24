@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
 
+from app.api.routes_auth import router as auth_router
 from app.api.routes_content import router as content_router
 from app.api.routes_crm import router as crm_router
 from app.api.routes_leads import router as leads_router
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(content_router)
 app.include_router(leads_router)
 app.include_router(crm_router)
